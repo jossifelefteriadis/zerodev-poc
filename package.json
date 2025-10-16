@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@biconomy/abstractjs": "^1.1.12",
     "@rainbow-me/rainbowkit": "^2.2.9",
     "@zerodev/ecdsa-validator": "^5.4.9",
     "@zerodev/passkey-validator": "^5.6.0",
