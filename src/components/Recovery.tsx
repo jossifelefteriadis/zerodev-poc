@@ -316,9 +316,8 @@ export default function Recovery() {
                   href={`https://sepolia.etherscan.io/address/${accountAddress}`}
                   target='_blank'
                   rel='noreferrer'
-                  className='underline'
                 >
-                  https://sepolia.etherscan.io/address/{accountAddress}
+                  {accountAddress}
                 </a>
               </p>
             )}
@@ -336,9 +335,8 @@ export default function Recovery() {
                   href={`https://sepolia.etherscan.io/tx/${finalTxHash}`}
                   target='_blank'
                   rel='noreferrer'
-                  className='underline'
                 >
-                  https://sepolia.etherscan.io/tx/{finalTxHash}
+                  {finalTxHash}
                 </a>
               </p>
             )}

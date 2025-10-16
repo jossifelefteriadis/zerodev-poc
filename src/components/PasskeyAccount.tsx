@@ -232,9 +232,8 @@ export default function PasskeyAccount() {
                   href={`https://sepolia.etherscan.io/address/${accountAddress}`}
                   target='_blank'
                   rel='noreferrer'
-                  className='underline'
                 >
-                  https://sepolia.etherscan.io/address/{accountAddress}
+                  {accountAddress}
                 </a>
               </p>
 
@@ -255,9 +254,8 @@ export default function PasskeyAccount() {
                 href={`https://sepolia.etherscan.io/tx/${txHash}`}
                 target='_blank'
                 rel='noreferrer'
-                className='underline'
               >
-                https://sepolia.etherscan.io/tx/{txHash}
+                {txHash}
               </a>
             </p>
           )}
