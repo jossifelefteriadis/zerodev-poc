@@ -243,7 +243,7 @@ export default function Recovery() {
           <p className='text-sm text-yellow-600 mb-3'>⚠ {globalGuard}</p>
         )}
 
-        <div className='w-full max-w-md space-y-2'>
+        <section className='w-full max-w-md space-y-2'>
           <button
             onClick={createDemoAccount}
             disabled={status === 'running' || disabledGlobal || demoCreated}
@@ -302,7 +302,7 @@ export default function Recovery() {
               : 'After: Failed'}
           </button>
 
-          <div className='mt-2 space-y-1 text-sm'>
+          <section className='mt-2 space-y-1 text-sm'>
             {error && (
               <p className='text-red-400'>
                 <b>Error:</b> {error}
@@ -340,8 +340,8 @@ export default function Recovery() {
                 </a>
               </p>
             )}
-          </div>
-        </div>
+          </section>
+        </section>
       </section>
     </section>
   );

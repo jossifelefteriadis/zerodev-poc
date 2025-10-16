@@ -187,8 +187,8 @@ export default function PasskeyAccount() {
           </p>
         )}
 
-        <div className='w-full max-w-md space-y-3'>
-          <div>
+        <section className='w-full max-w-md space-y-3'>
+          <section>
             <label className='block text-sm mb-1'>Username</label>
             <input
               className={inputBase}
@@ -197,7 +197,7 @@ export default function PasskeyAccount() {
               onChange={(e) => setUsername(e.target.value)}
               disabled={isAccountReady}
             />
-          </div>
+          </section>
 
           {error && (
             <p className='text-sm text-red-400'>
@@ -206,7 +206,7 @@ export default function PasskeyAccount() {
           )}
 
           {!isAccountReady && ZERODEV_RPC && (
-            <div className='flex gap-2'>
+            <section className='flex gap-2'>
               <button
                 onClick={handleRegister}
                 disabled={isRegistering || isLoggingIn || !username}
@@ -221,7 +221,7 @@ export default function PasskeyAccount() {
               >
                 {isLoggingIn ? 'Logging in…' : 'Login with Passkey'}
               </button>
-            </div>
+            </section>
           )}
 
           {isAccountReady && (
@@ -259,7 +259,7 @@ export default function PasskeyAccount() {
               </a>
             </p>
           )}
-        </div>
+        </section>
       </section>
     </section>
   );

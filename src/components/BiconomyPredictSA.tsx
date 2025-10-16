@@ -3,12 +3,10 @@
 import React, { useMemo, useState } from 'react';
 import { useAccount, useWalletClient } from 'wagmi';
 import { http } from 'viem';
-import { optimism } from 'viem/chains';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 import {
   toMultichainNexusAccount,
-  createMeeClient,
   getMEEVersion,
   MEEVersion,
 } from '@biconomy/abstractjs';
@@ -17,16 +15,42 @@ export default function BiconomyPredictSA() {
   const { address: eoaAddress, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient({ account: eoaAddress });
 
-  const OPSP_RPC = process.env.NEXT_PUBLIC_OPSP_RPC;
-
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saAddress, setSaAddress] = useState<`0x${string}` | null>(null);
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
-  const opMainnetTransport = useMemo(() => http(OPSP_RPC), [OPSP_RPC]);
+  const activeChain = walletClient?.chain ?? null;
 
-  async function createBiconomySA() {
+  const transport = useMemo(() => {
+    if (!activeChain) return null;
+
+    const id = activeChain.id;
+    const envKey = `NEXT_PUBLIC_RPC_${id}`;
+    const envRpcSpecific = (process as any)?.env?.[envKey] as
+      | string
+      | undefined;
+
+    const sophonEnv =
+      id === 531050204
+        ? ((process as any)?.env?.NEXT_PUBLIC_SOPHON_RPC as string | undefined)
+        : undefined;
+
+    const FALLBACKS: Record<number, string> = {
+      11155420:
+        (process as any)?.env?.NEXT_PUBLIC_OPSP_RPC ??
+        'https://sepolia.optimism.io',
+      531050204: 'https://zksync-os-testnet-sophon.zksync.dev',
+    };
+
+    const rpc = envRpcSpecific ?? sophonEnv ?? FALLBACKS[id];
+    return rpc ? http(rpc) : null;
+  }, [activeChain]);
+
+  const explorerBase =
+    activeChain?.blockExplorers?.default?.url?.replace(/\/+$/, '') ?? null;
+
+  async function predictCurrentChainSA() {
     try {
       setBusy(true);
       setError(null);
@@ -36,25 +60,30 @@ export default function BiconomyPredictSA() {
       if (!isConnected || !walletClient?.account) {
         throw new Error('Connect a wallet first.');
       }
-      if (!OPSP_RPC) {
-        throw new Error('NEXT_PUBLIC_OPSP_RPC is not set.');
+      if (!activeChain) {
+        throw new Error('Could not detect the active chain from the wallet.');
+      }
+      if (!transport) {
+        const hint =
+          activeChain.id === 531050204
+            ? 'Set NEXT_PUBLIC_SOPHON_RPC or NEXT_PUBLIC_RPC_531050204 to a valid RPC URL.'
+            : `Set NEXT_PUBLIC_RPC_${activeChain.id} to a valid RPC URL.`;
+        throw new Error(`No RPC transport configured. ${hint}`);
       }
 
       const orchestrator: any = await toMultichainNexusAccount({
         signer: walletClient,
         chainConfigurations: [
           {
-            chain: optimism,
-            transport: opMainnetTransport,
+            chain: activeChain as any,
+            transport,
             version: getMEEVersion(MEEVersion.V2_1_0),
           },
         ],
         transports: {
-          [optimism.id]: opMainnetTransport,
+          [activeChain.id]: transport,
         },
       });
-
-      await createMeeClient({ account: orchestrator });
 
       let predicted: `0x${string}` | undefined;
       const tried: string[] = [];
@@ -62,32 +91,32 @@ export default function BiconomyPredictSA() {
       if (!predicted && typeof orchestrator.addressOn === 'function') {
         try {
           tried.push('addressOn(chainObject)');
-          predicted = await orchestrator.addressOn(optimism);
+          predicted = await orchestrator.addressOn(activeChain);
         } catch {}
       }
       if (!predicted && typeof orchestrator.addressOn === 'function') {
         try {
           tried.push('addressOn({ chain })');
-          predicted = await orchestrator.addressOn({ chain: optimism });
+          predicted = await orchestrator.addressOn({ chain: activeChain });
         } catch {}
       }
       if (!predicted && typeof orchestrator.addressOn === 'function') {
         try {
           tried.push('addressOn(chainId)');
-          predicted = await orchestrator.addressOn(optimism.id);
+          predicted = await orchestrator.addressOn(activeChain.id);
         } catch {}
       }
       if (!predicted && typeof orchestrator.addressOn === 'function') {
         try {
           tried.push('addressOn({ chainId })');
-          predicted = await orchestrator.addressOn({ chainId: optimism.id });
+          predicted = await orchestrator.addressOn({ chainId: activeChain.id });
         } catch {}
       }
 
       if (!predicted && typeof orchestrator.deploymentOn === 'function') {
         try {
           tried.push('deploymentOn(chainObject)');
-          const dep = await orchestrator.deploymentOn(optimism);
+          const dep = await orchestrator.deploymentOn(activeChain);
           const addr =
             dep?.address || dep?.smartAccountAddress || dep?.predictedAddress;
           if (addr) predicted = addr as `0x${string}`;
@@ -96,7 +125,7 @@ export default function BiconomyPredictSA() {
       if (!predicted && typeof orchestrator.deploymentOn === 'function') {
         try {
           tried.push('deploymentOn(chainId)');
-          const dep = await orchestrator.deploymentOn(optimism.id);
+          const dep = await orchestrator.deploymentOn(activeChain.id);
           const addr =
             dep?.address || dep?.smartAccountAddress || dep?.predictedAddress;
           if (addr) predicted = addr as `0x${string}`;
@@ -106,8 +135,8 @@ export default function BiconomyPredictSA() {
       if (!predicted && orchestrator.deployments) {
         tried.push('deployments map lookup');
         const dep =
-          orchestrator.deployments[optimism.id] ??
-          orchestrator.deployments[String(optimism.id)];
+          orchestrator.deployments[activeChain.id] ??
+          orchestrator.deployments[String(activeChain.id)];
         const addr =
           dep?.address || dep?.smartAccountAddress || dep?.predictedAddress;
         if (addr) predicted = addr as `0x${string}`;
@@ -116,27 +145,23 @@ export default function BiconomyPredictSA() {
       if (!predicted) {
         setDebugInfo({
           eoa: walletClient.account.address,
-          chainId: optimism.id,
-          meeVersion: 'V2_1_0',
-          rpc: OPSP_RPC,
+          chainId: activeChain.id,
+          chainName: activeChain.name,
           orchestratorKeys: Object.keys(orchestrator ?? {}),
-          tried,
-          hasDeploymentsField: !!orchestrator?.deployments,
-          hasAddressOn: typeof orchestrator.addressOn === 'function',
-          hasDeploymentOn: typeof orchestrator.deploymentOn === 'function',
+          triedResolvers: tried,
         });
         throw new Error(
-          'Could not resolve Smart Account address with current Abstract.js build.'
+          'Could not resolve Smart Account address on the current chain with suite v2.1.0. Ensure v2.1.0 MEE/Nexus is live on this chain and your RPC/env are correct.'
         );
       }
 
       setSaAddress(predicted);
       setDebugInfo({
         eoa: walletClient.account.address,
-        chainId: optimism.id,
-        meeVersion: 'V2_1_0',
-        rpc: OPSP_RPC,
-        resolvedVia: tried,
+        chainId: activeChain.id,
+        chainName: activeChain.name,
+        explorer: explorerBase,
+        usedVersion: 'V2_1_0',
       });
     } catch (e: any) {
       setError(e?.message ?? String(e));
@@ -155,16 +180,16 @@ export default function BiconomyPredictSA() {
           <section className='flex flex-col mt-4'>
             <p className='text-sm opacity-80'>Connected: {eoaAddress}</p>
             <button
-              onClick={createBiconomySA}
+              onClick={predictCurrentChainSA}
               disabled={disabled}
               className='mt-2 px-4 py-2 rounded-xl border border-neutral-600 disabled:opacity-50 cursor-pointer'
             >
-              {busy ? 'Working…' : 'Predict Smart Account Address'}
+              {busy ? 'Working…' : 'Predict Smart Account'}
             </button>
           </section>
         )}
 
-        <div className='mt-4 space-y-2 text-sm'>
+        <section className='mt-4 space-y-2 text-sm'>
           {error && (
             <p className='text-red-400'>
               <b>Error:</b> {error}
@@ -174,16 +199,20 @@ export default function BiconomyPredictSA() {
           {saAddress && (
             <p>
               <b>Predicted Smart Account:</b>{' '}
-              <a
-                href={`https://sepolia-optimism.etherscan.io/address/${saAddress}`}
-                target='_blank'
-                rel='noreferrer'
-              >
-                {saAddress}
-              </a>
+              {explorerBase ? (
+                <a
+                  href={`${explorerBase}/address/${saAddress}`}
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  {saAddress}
+                </a>
+              ) : (
+                saAddress
+              )}
             </p>
           )}
-        </div>
+        </section>
       </section>
     </section>
   );
