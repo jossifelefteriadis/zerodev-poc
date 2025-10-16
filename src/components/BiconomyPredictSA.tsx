@@ -173,25 +173,15 @@ export default function BiconomyPredictSA() {
 
           {saAddress && (
             <p>
-              <b>Smart Account:</b>{' '}
+              <b>Predicted Smart Account:</b>{' '}
               <a
-                className='underline'
                 href={`https://sepolia-optimism.etherscan.io/address/${saAddress}`}
                 target='_blank'
                 rel='noreferrer'
               >
-                https://sepolia-optimism.etherscan.io/address/{saAddress}
+                {saAddress}
               </a>
             </p>
-          )}
-
-          {debugInfo && (
-            <details className='mt-2'>
-              <summary className='cursor-pointer'>Debug info</summary>
-              <pre className='mt-2 p-3 rounded bg-neutral-900 overflow-auto text-xs'>
-                {JSON.stringify(debugInfo, null, 2)}
-              </pre>
-            </details>
           )}
         </div>
       </section>
