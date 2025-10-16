@@ -7,7 +7,7 @@ import {
   darkTheme,
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
+import { sepolia, optimismSepolia } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { defineChain } from 'viem';
 
@@ -34,7 +34,7 @@ export const sophonTestnet = defineChain({
 export const wagmiConfig = getDefaultConfig({
   appName: 'Smart Account Demo',
   projectId,
-  chains: [sepolia, sophonTestnet],
+  chains: [sepolia, optimismSepolia, sophonTestnet],
   ssr: true,
 });
 

@@ -7,11 +7,13 @@ import SophonSmartAccount from '@/components/SophonSmartAccount';
 import ManualUserOpSender from '@/components/ManualUserOpSender';
 
 import BiconomyPredictSA from '@/components/BiconomyPredictSA';
+import BiconomySmartAccount from '@/components/BiconomySmartAccount';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<
+  const [zdActiveTab, setZdActiveTab] = useState<
     'smartaccount' | 'passkey' | 'recovery' | 'ssa'
   >('smartaccount');
+  const [bActiveTab, setBActiveTab] = useState<'psa' | 'smartaccount'>('psa');
   const [demo, setDemo] = useState<'zerodev' | 'biconomy'>('zerodev');
 
   return (
@@ -48,36 +50,36 @@ export default function Home() {
           <section className='w-full flex flex-col items-center'>
             <section className='w-1/3 flex justify-evenly mt-4'>
               <button
-                onClick={() => setActiveTab('smartaccount')}
+                onClick={() => setZdActiveTab('smartaccount')}
                 className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
               >
                 Smart Account
               </button>
               <button
-                onClick={() => setActiveTab('passkey')}
+                onClick={() => setZdActiveTab('passkey')}
                 className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
               >
                 Passkey
               </button>
               <button
-                onClick={() => setActiveTab('recovery')}
+                onClick={() => setZdActiveTab('recovery')}
                 className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
               >
                 Recovery
               </button>
               <button
-                onClick={() => setActiveTab('ssa')}
+                onClick={() => setZdActiveTab('ssa')}
                 className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
               >
                 SSA
               </button>
             </section>
             <section className='w-full h-full flex flex-col items-center mt-10'>
-              {activeTab === 'smartaccount' && <SmartAccounts />}
-              {activeTab === 'passkey' && <PasskeyAccount />}
-              {activeTab === 'recovery' && <Recovery />}
-              {/* {activeTab === 'ssa' && <SophonSmartAccount />} */}
-              {activeTab === 'ssa' && <ManualUserOpSender />}
+              {zdActiveTab === 'smartaccount' && <SmartAccounts />}
+              {zdActiveTab === 'passkey' && <PasskeyAccount />}
+              {zdActiveTab === 'recovery' && <Recovery />}
+              {/* {zdActiveTab === 'ssa' && <SophonSmartAccount />} */}
+              {zdActiveTab === 'ssa' && <ManualUserOpSender />}
             </section>
           </section>
         )}
@@ -85,21 +87,21 @@ export default function Home() {
           <section className='w-full flex flex-col items-center'>
             <section className='w-1/3 flex justify-evenly mt-4'>
               <button
-                onClick={() => setActiveTab('smartaccount')}
+                onClick={() => setBActiveTab('psa')}
+                className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
+              >
+                Predict SA
+              </button>
+              <button
+                onClick={() => setBActiveTab('smartaccount')}
                 className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
               >
                 Smart Account
               </button>
-              <button
-                onClick={() => setActiveTab('passkey')}
-                className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
-              >
-                Passkey
-              </button>
             </section>
             <section className='w-full h-full flex flex-col items-center mt-10'>
-              {activeTab === 'smartaccount' && <BiconomyPredictSA />}
-              {/* {activeTab === 'passkey' && <PasskeyAccount />} */}
+              {bActiveTab === 'psa' && <BiconomyPredictSA />}
+              {bActiveTab === 'smartaccount' && <BiconomySmartAccount />}
             </section>
           </section>
         )}
