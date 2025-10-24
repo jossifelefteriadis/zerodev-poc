@@ -8,12 +8,16 @@ import ManualUserOpSender from '@/components/ManualUserOpSender';
 
 import BiconomyPredictSA from '@/components/BiconomyPredictSA';
 import BiconomySmartAccount from '@/components/BiconomySmartAccount';
+import BridgeAndSupplyAave from '@/components/BridgeAndSupplyAave';
+import GoogleSmartAccount from '@/components/GoogleSmartAccount';
 
 export default function Home() {
   const [zdActiveTab, setZdActiveTab] = useState<
     'smartaccount' | 'passkey' | 'recovery' | 'ssa'
   >('smartaccount');
-  const [bActiveTab, setBActiveTab] = useState<'psa' | 'smartaccount'>('psa');
+  const [bActiveTab, setBActiveTab] = useState<
+    'psa' | 'smartaccount' | 'aave' | 'google'
+  >('psa');
   const [demo, setDemo] = useState<'zerodev' | 'biconomy'>('zerodev');
 
   return (
@@ -98,10 +102,24 @@ export default function Home() {
               >
                 Smart Account
               </button>
+              <button
+                onClick={() => setBActiveTab('aave')}
+                className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
+              >
+                Aave
+              </button>
+              <button
+                onClick={() => setBActiveTab('google')}
+                className='bg-[#0096f7] w-34 h-8 cursor-pointer rounded'
+              >
+                Google
+              </button>
             </section>
             <section className='w-full h-full flex flex-col items-center mt-10'>
               {bActiveTab === 'psa' && <BiconomyPredictSA />}
               {bActiveTab === 'smartaccount' && <BiconomySmartAccount />}
+              {bActiveTab === 'aave' && <BridgeAndSupplyAave />}
+              {bActiveTab === 'google' && <GoogleSmartAccount />}
             </section>
           </section>
         )}
